@@ -1,0 +1,9 @@
+services:
+  url2epub:
+    image: ghcr.io/norbiox/url2epub:latest
+    # build: .   # alternatively build locally
+    container_name: url2epub
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8000:8000"   # restrict to Tailscale IP if needed, e.g. "100.x.y.z:8000:8000"
