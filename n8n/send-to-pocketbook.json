@@ -1,0 +1,82 @@
+{
+  "name": "Send to PocketBook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "send-to-pocketbook",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1f0c6c2-0001-4c1e-9a10-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "send-to-pocketbook"
+    },
+    {
+      "parameters": {
+        "url": "http://url2epub:8000/epub",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.query.url || $json.body.url || $json.body.text }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 120000
+        }
+      },
+      "id": "a1f0c6c2-0001-4c1e-9a10-000000000002",
+      "name": "url2epub",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0]
+    },
+    {
+      "parameters": {
+        "fromEmail": "you@example.com",
+        "toEmail": "YTPF0700806120W000A9@pbsync.com",
+        "subject": "={{ $binary.data.fileName }}",
+        "emailFormat": "text",
+        "text": "={{ $binary.data.fileName }}",
+        "options": {
+          "attachments": "data"
+        }
+      },
+      "id": "a1f0c6c2-0001-4c1e-9a10-000000000003",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [440, 0]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=sent: {{ $('url2epub').item.binary.data.fileName }}",
+        "options": {}
+      },
+      "id": "a1f0c6c2-0001-4c1e-9a10-000000000004",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [660, 0]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "url2epub", "type": "main", "index": 0 }]] },
+    "url2epub": { "main": [[{ "node": "Send Email", "type": "main", "index": 0 }]] },
+    "Send Email": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}
